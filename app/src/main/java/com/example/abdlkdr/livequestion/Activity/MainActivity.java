@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.example.abdlkdr.livequestion.Model.Answer;
 import com.example.abdlkdr.livequestion.Model.QuestionAndAnswer;
 import com.example.abdlkdr.livequestion.Model.Video;
 import com.example.abdlkdr.livequestion.R;
@@ -46,6 +47,10 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
+//sorun iki tane counttimer çağrışdığı için iki defa getonly splash ekranına giriyor ve böylece iki defa temp value artırmış oluyoruz
+    //yarın burayı düzelt
+    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+
 
 //    http://www.androidtutorialshub.com/android-count-down-timer-tutorial/
 
@@ -71,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
     private Button answerOne, answerSecond, answerThird;
     private Dialog dialog;
     private QuestionAndAnswer questionAndAnswer = new QuestionAndAnswer();
+    private Answer answer= new Answer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,11 +112,11 @@ public class MainActivity extends AppCompatActivity {
                 //soru geldiğinde soru ekranı gozukecek ve soru timer baslıyacak
                 if ((!(new String(mqttMessage.getPayload())).contentEquals("I am going offline"))) {
                     Toast.makeText(MainActivity.this, new String(mqttMessage.getPayload()), Toast.LENGTH_LONG).show();
-                    parseStringToJson(new String(mqttMessage.getPayload()));
                     Log.e(TAG, "messageArrived: " + new String(mqttMessage.getPayload()));
                     splashVideoView.setVisibility(View.GONE);
+                    parseStringToJson(new String(mqttMessage.getPayload()));
                     setProgressBarCircle();
-                    dialog.show();
+
                 }
             }
 
@@ -122,7 +128,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private QuestionAndAnswer parseStringToJson(String message) {
-
         JSONObject jsonObject;
         try {
             if (message != null) {
@@ -137,8 +142,6 @@ public class MainActivity extends AppCompatActivity {
                     questionAndAnswer.setAnswer3(jsonObject.getString("answer3"));
                 if (!jsonObject.isNull("questionNumber"))
                     questionAndAnswer.setQuestionNumber(jsonObject.getInt("questionNumber"));
-                if (!jsonObject.isNull("rightAnswer"))
-                    questionAndAnswer.setRightAnswer(jsonObject.getInt("rightAnswer"));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -150,8 +153,8 @@ public class MainActivity extends AppCompatActivity {
         answerSecond.setText(questionAndAnswer.getAnswer2());
         answerThird.setText(questionAndAnswer.getAnswer3());
         questionTextView.setText(questionAndAnswer.getQuestion());
-        rightAnswer=questionAndAnswer.getRightAnswer();
         answeringQuestionByUser();
+        dialog.show();
         Log.e(TAG, "parseStringToJson: question " + questionAndAnswer.getQuestion() + "  answer " + questionAndAnswer.getAnswer() + "   questionnumber  " + questionAndAnswer.getQuestionNumber());
         return questionAndAnswer;
     }
@@ -187,9 +190,6 @@ public class MainActivity extends AppCompatActivity {
 //                splashVideoView.setVisibility(View.VISIBLE);
                 splashVideoView.setVisibility(View.VISIBLE);
                 getOnlySplash();
-
-
-
                 //TEKRARDAN VİDEO DEVREYE GİRECEK procees videosuna girecek
 //                    questionVideoView.setVisibility(View.GONE);
 //                    dialog.dismiss();
@@ -296,13 +296,6 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "doInBackground: video bitti");
                     Log.e(TAG, "onCompletion: tempValues is " + tempValue);
                     Toast.makeText(MainActivity.this, "VİDEO BİTTİ", Toast.LENGTH_LONG).show();
-//                tempValue = tempValue + 2;
-//                if (progresbarIsFınısh){
-//                    getSplashVideoView(tempValue);
-//                    splashVideoView.setVisibility(View.VISIBLE);
-//                }else {
-//                    getOnlySplashVideoView();
-//                }
                 }
             });
             questionVideoView.setOnInfoListener(new MediaPlayer.OnInfoListener() {
@@ -355,30 +348,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         splashVideoView.start();
-    }
-
-    private void getNextVideoUrl(final int tempValue) {
-        OkHttpClient client = new OkHttpClient();
-        HttpUrl url = new HttpUrl.Builder()
-                .scheme("http")
-                .host(Constant.SYSTEMIP)
-                .port(8080)
-                .addPathSegment("getNextVideoUrl")
-                .addQueryParameter("tempValue", String.valueOf(tempValue))
-                .build();
-        Request request = new Request.Builder().url(url.toString()).build();
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Request request, IOException e) {
-
-            }
-
-            @Override
-            public void onResponse(Response response) throws IOException {
-                Log.e(TAG, "onResponse: tempvalue is " + tempValue);
-                getVideoUrl(tempValue);
-            }
-        });
     }
 
     public void subscribe(@NonNull MqttAndroidClient client,
@@ -450,6 +419,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getOnlySplash(){
+        getRightAnswer();
         splashVideoURL = "http://mobiversite.cloudapp.net:8080/videos/kisa.MP4";
         final Uri uri = Uri.parse(splashVideoURL);
         splashVideoView.setVideoURI(uri);
@@ -468,11 +438,10 @@ public class MainActivity extends AppCompatActivity {
         splashVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
+
                 setDialogButtons();
                 questionAnswerDialog();
                 dialog.show();
-
-//
 //                tempValue=tempValue+2;
 //                getSplashVideoView(tempValue);
 //                splashVideoView.setVisibility(View.VISIBLE);
@@ -505,15 +474,16 @@ public class MainActivity extends AppCompatActivity {
                 setProgressBarValues();
                 dialog.dismiss();
                 tempValue=tempValue+2;
-                getSplashVideoView(tempValue);
                 splashVideoView.setVisibility(View.VISIBLE);
-
+                getSplashVideoView(tempValue);
             }
         }.start();
         countDownTimer.start();
     }
 
     private void setDialogButtons(){
+        Log.e(TAG, "setDialogButtons: right answer is "+rightAnswer );
+        rightAnswer=answer.getRightAnswer();
         answerOne.setText(questionAndAnswer.getAnswer());
         answerSecond.setText(questionAndAnswer.getAnswer2());
         answerThird.setText(questionAndAnswer.getAnswer3());
@@ -548,6 +518,37 @@ public class MainActivity extends AppCompatActivity {
             if (rightAnswer==2)
                 answerSecond.setBackgroundColor(Color.GREEN);
         }
+    }
+
+    private void getRightAnswer(){
+        //http://localhost:8080/answer/getAnswer?questionId=3
+        OkHttpClient client = new OkHttpClient();
+        HttpUrl url = new HttpUrl.Builder()
+                .scheme("http")
+                .host(Constant.SYSTEMIP)
+                .port(8080)
+                .addPathSegment("answer")
+                .addPathSegment("getAnswer")
+                .addQueryParameter("questionId", String.valueOf(questionAndAnswer.getQuestionNumber()))
+                .build();
+        Log.e(TAG, "getRightAnswer: URL :"+ url.toString() );
+        Request request = new Request.Builder().url(url.toString()).build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Request request, IOException e) {
+
+            }
+            @Override
+            public void onResponse(Response response) throws IOException {
+                int myResponse = Integer.parseInt(response.body().string());
+                if (response.body()!=null){
+                    answer.setRightAnswer(myResponse);
+                    Log.e(TAG, "onResponse: answer is " + answer.getRightAnswer());
+                    rightAnswer=answer.getRightAnswer();
+
+                }
+            }
+        });
     }
 }
 
