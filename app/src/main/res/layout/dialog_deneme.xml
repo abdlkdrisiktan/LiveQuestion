@@ -1,128 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/colorPrimary"
+    android:layout_centerVertical="true">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/colorPrimary"
-        android:visibility="visible"
-        android:id="@+id/mainFrameLayout">
+        <RelativeLayout
+            android:id="@+id/timerRelative"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="16dp">
 
-        <FrameLayout
-            android:id="@+id/questionFrameLayout"
-            android:layout_width="300dp"
-            android:layout_height="400dp"
-            android:layout_gravity="center"
-            android:visibility="visible">
+            <ProgressBar
+                android:id="@+id/progressBarCircle"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_centerInParent="true"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/drawable_circle_dark_blue"
+                android:indeterminate="false"
+                android:max="100"
+                android:progress="100"
+                android:progressDrawable="@drawable/drawable_circle_yellow"
+                android:rotation="-90"
+                android:visibility="visible" />
 
-            <FrameLayout
+            <TextView
+                android:id="@+id/timeTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:layout_editor_absoluteX="100dp"
-                tools:layout_editor_absoluteY="0dp"
-                android:id="@+id/progressBarCircleFrameLayout"
-                android:visibility="visible">
+                android:layout_centerInParent="true"
+                android:layout_gravity="center_horizontal"
+                android:text="00:01:00"
+                android:textColor="@color/colorYellow"
+                android:textSize="20sp"
+                android:visibility="visible" />
+        </RelativeLayout>
 
-                <ProgressBar
-                    android:id="@+id/progressBarCircle"
-                    style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:layout_centerInParent="true"
-                    android:background="@drawable/drawable_circle_dark_blue"
-                    android:indeterminate="false"
-                    android:max="100"
-                    android:progress="100"
-                    android:progressDrawable="@drawable/drawable_circle_yellow"
-                    android:rotation="-90"
-                    android:layout_marginLeft="110dp"
-                    android:visibility="visible"/>
+        <RelativeLayout
+            android:id="@+id/questionRelative"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/timerRelative"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp">
 
-                <TextView
-                    android:id="@+id/timeTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:text="00:01:00"
-                    android:textColor="@color/colorYellow"
-                    android:textSize="20sp"
-                    android:layout_marginLeft="120dp"
-                    android:layout_marginTop="40dp"
-                    android:visibility="visible"/>
+            <TextView
+                android:id="@+id/questionTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:text="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaAAAAAAAAAAAA"
+                android:textColor="#FFFFFF"
+                android:textAlignment="center"
+                />
 
-            </FrameLayout>
+            <Button
+                android:id="@+id/answerOne"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="deneme"
+                android:layout_below="@id/questionTextView"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="8dp"
+                />
 
-            <android.support.constraint.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+            <Button
+                android:layout_centerHorizontal="true"
+                android:id="@+id/answerSecond"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/answerOne"
+                android:text="deneme"
+                android:layout_marginTop="8dp"
+                 />
 
-                <TextView
-                    android:id="@+id/questionTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="8dp"
-                    android:foregroundGravity="center"
-                    android:text="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaAAAAAAAAAAAA"
-                    android:textColor="#FFFFFF"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.3" />
+            <Button
+                android:layout_centerHorizontal="true"
+                android:id="@+id/answerThird"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="deneme"
+                android:layout_marginTop="8dp"
+                android:layout_below="@id/answerSecond"
+                android:layout_marginBottom="8dp"/>
 
-                <Button
-                    android:id="@+id/answerOne"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="8dp"
-                    android:text="deneme"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+        </RelativeLayout>
 
-                <Button
-                    android:id="@+id/answerSecond"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="8dp"
-                    android:text="deneme"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.69" />
 
-                <Button
-                    android:id="@+id/answerThird"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="8dp"
-                    android:text="deneme"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/answerSecond"
-                    app:layout_constraintVertical_bias="0.65" />
-
-            </android.support.constraint.ConstraintLayout>
-
-        </FrameLayout>
-    </FrameLayout>
 </RelativeLayout>

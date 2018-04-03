@@ -13,8 +13,10 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.MediaController;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -64,19 +66,20 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBarCircle;
     private VideoView splashVideoView, questionVideoView;
     private FrameLayout questionFrameLayout, progressBarCircleFrameLayout, mainFrameLayout;
-    private int tempValue = 1,tempButtonClick=0,rightAnswer=0;
+    private int tempValue = 1, tempButtonClick = 0, rightAnswer = 0, counter = 0;
     private static final String TAG = "MainActivity";
-    private CountDownTimer countDownTimer;
+    private CountDownTimer countDownTimer, answerCountDownTimer;
     private TextView timeTextView, questionTextView;
     private String videoURL = "", splashVideoURL = "";
-    public static final String clientId = "MobiversiteSamsung";
+    //    public static final String clientId = "MobiversiteSamsung";
+    public static final String clientId = "MobiversiteEmulatorMarshmallow";
     public static final String serverURI = "tcp://mobiversite.cloudapp.net:1883";
     public static final String publishTopic = "deneme";
     private MqttAndroidClient mqttAndroidClient;
     private Button answerOne, answerSecond, answerThird;
     private Dialog dialog;
     private QuestionAndAnswer questionAndAnswer = new QuestionAndAnswer();
-    private Answer answer= new Answer();
+    private Answer answer = new Answer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,7 +187,6 @@ public class MainActivity extends AppCompatActivity {
                 // call to initialize the progress bar values
                 setProgressBarValues();
                 dialog.dismiss();
-//                tempValue = tempValue + 2;
                 Log.e(TAG, "onFinish: tempvalue in progress bar :  " + tempValue);
 //                getSplashVideoView(tempValue);
 //                splashVideoView.setVisibility(View.VISIBLE);
@@ -260,6 +262,17 @@ public class MainActivity extends AppCompatActivity {
                                 Log.e(TAG, "run: videoURL is :  " + video.getUrl());
                                 videoURL = video.getUrl();
                                 getQuestionVideoView(videoURL);
+//                                questionVideoView.requestFocus();
+//                                questionVideoView.setZOrderOnTop(false);
+//                                DisplayMetrics displayMetrics = new DisplayMetrics();
+//                                getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+//                                ViewGroup.LayoutParams videoParams = questionVideoView.getLayoutParams();
+//                                videoParams.width = displayMetrics.widthPixels;
+//                                videoParams.height = displayMetrics.heightPixels;
+//                                questionVideoView.setLayoutParams(videoParams);
+//                                questionVideoView.setVideoURI(Uri.parse(videoURL));
+//                                new MyAsync().execute();
+
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -270,23 +283,70 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private class MyAsync extends AsyncTask<Void, Integer, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+//        questionVideoView.start();
+
+            Log.e(TAG, "doInBackground: HHHHHHHHHHHHHHHHHHHHHHHH");
+            questionVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    Log.e(TAG, "onPrepared: PREPARİNG İŞLEMİ");
+                    mp.start();
+                    if (mp.isPlaying()) {
+                        questionVideoView.setVisibility(View.VISIBLE);
+                        splashVideoView.setVisibility(View.GONE);
+                    }
+                }
+            });
+            questionVideoView.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                @Override
+                public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                    return false;
+                }
+            });
+            questionVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    Toast.makeText(MainActivity.this,"bitti",Toast.LENGTH_LONG).show();
+                }
+            });
+            return null;
+        }
+    }
+
     private void getQuestionVideoView(String questionVideoURL) {
-        Log.e(TAG, "getQuestionVideoView:  start sonrası questionvideoURL :  "+ questionVideoURL);
-        if (questionVideoURL!=null){
+        Log.e(TAG, "getQuestionVideoView:  start sonrası questionvideoURL :  " + questionVideoURL);
+        if (questionVideoURL != null) {
             Uri uri = Uri.parse(questionVideoURL);
             questionVideoView.setVideoURI(uri);
-            questionVideoView.start();
             questionVideoView.requestFocus();
+//            questionVideoView.start();
             DisplayMetrics displayMetrics = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             ViewGroup.LayoutParams videoParams = questionVideoView.getLayoutParams();
             videoParams.width = displayMetrics.widthPixels;
             videoParams.height = displayMetrics.heightPixels;
             questionVideoView.setLayoutParams(videoParams);
+
             questionVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
-                    Log.e(TAG, "onPrepared: getquestionvideoview");
+                    mp.start();
+                    if (mp.isPlaying()) {
+                        Log.e(TAG, "onPrepared: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa");
+                        Toast.makeText(MainActivity.this, "mp is playing", Toast.LENGTH_LONG).show();
+                        questionVideoView.setZOrderOnTop(false);
+                        splashVideoView.setZOrderOnTop(true);
+//                    splashVideoView.setZOrderOnTop(false);
+//
+//                    splashVideoView.setZOrderMediaOverlay(false);
+//                    questionVideoView.setZOrderOnTop(true);
+//                    questionVideoView.setZOrderMediaOverlay(true);
+                        questionVideoView.setVisibility(View.VISIBLE);
+                        splashVideoView.setVisibility(View.GONE);
+                    }
                 }
             });
             questionVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -301,26 +361,30 @@ public class MainActivity extends AppCompatActivity {
             questionVideoView.setOnInfoListener(new MediaPlayer.OnInfoListener() {
                 @Override
                 public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                    int counter = 0;
-                    Log.e(TAG, "onInfo: getquestionvideoview onınfo lıstener");
-                    if (mp.isPlaying()) {
-                        splashVideoView.setVisibility(View.GONE);
-                        questionVideoView.setVisibility(View.VISIBLE);
-                    }
+                    counter++;
+//                    Log.e(TAG, "onInfo: getquestionvideoview onınfo lıstener");
+//                    if (mp.isPlaying() && counter==1) {
+//                        splashVideoView.setVisibility(View.GONE);
+//                        Log.e(TAG, "onInfo: counter içerisişi BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBb" );
+//                        Toast.makeText(MainActivity.this,"ON ınfo ",Toast.LENGTH_LONG).show();
+//                        questionVideoView.setVisibility(View.VISIBLE);
+//                    }
                     return false;
                 }
             });
-        }
-        else {
-            Toast.makeText(MainActivity.this,"URL YOK",Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(MainActivity.this, "URL YOK", Toast.LENGTH_LONG).show();
         }
     }
 
     private void getSplashVideoView(int tempValue) {
         getVideoUrl(tempValue);
-        splashVideoURL = "http://mobiversite.cloudapp.net:8080/videos/kisa.MP4";
+        //https://youtubemp4.to/@download/18-5ac340845a54f-mp4-105301/videos/W1VZ0prt-Dk/Water%2BSplash.mp4
+        splashVideoURL = "http://mobiversite.cloudapp.net:8080/videos/splash.mp4";
+//        splashVideoURL = "http://mobiversite.cloudapp.net:8080/videos/kisa.MP4";
         final Uri uri = Uri.parse(splashVideoURL);
         splashVideoView.setVideoURI(uri);
+        splashVideoView.requestFocus();
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         ViewGroup.LayoutParams videoParams = splashVideoView.getLayoutParams();
@@ -330,6 +394,8 @@ public class MainActivity extends AppCompatActivity {
         splashVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                mp.start();
+
 //                mp.setLooping(true);
             }
         });
@@ -337,8 +403,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCompletion(MediaPlayer mp) {
                 Log.e(TAG, "onCompletion: splashvideoview on completion questionVideoViewIsActive    ");
-                splashVideoView.setVideoURI(uri);
-                splashVideoView.start();
+//                splashVideoView.setVideoURI(uri);
+//                splashVideoView.start();
+                mp.start();
             }
         });
         splashVideoView.setOnInfoListener(new MediaPlayer.OnInfoListener() {
@@ -347,7 +414,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-        splashVideoView.start();
+//        splashVideoView.start();
     }
 
     public void subscribe(@NonNull MqttAndroidClient client,
@@ -369,12 +436,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void createPopUpDialog() {
         dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_deneme);
         dialog.setCanceledOnTouchOutside(true);
 
-        mainFrameLayout = dialog.findViewById(R.id.mainFrameLayout);
-        progressBarCircleFrameLayout = dialog.findViewById(R.id.progressBarCircleFrameLayout);
-        questionFrameLayout = dialog.findViewById(R.id.questionFrameLayout);
+//        mainFrameLayout = dialog.findViewById(R.id.mainFrameLayout);
+//        progressBarCircleFrameLayout = dialog.findViewById(R.id.progressBarCircleFrameLayout);
+//        questionFrameLayout = dialog.findViewById(R.id.questionFrameLayout);
 
         answerOne = dialog.findViewById(R.id.answerOne);
         answerSecond = dialog.findViewById(R.id.answerSecond);
@@ -387,12 +455,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void answeringQuestionByUser(){
-        tempButtonClick=0;
+    private void answeringQuestionByUser() {
+        tempButtonClick = 0;
         answerOne.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                tempButtonClick=1;
+                tempButtonClick = 1;
                 answerSecond.setClickable(false);
                 answerThird.setClickable(false);
                 answerOne.setBackgroundColor(Color.BLUE);
@@ -401,7 +469,7 @@ public class MainActivity extends AppCompatActivity {
         answerSecond.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                tempButtonClick=2;
+                tempButtonClick = 2;
                 answerOne.setClickable(false);
                 answerThird.setClickable(false);
                 answerSecond.setBackgroundColor(Color.BLUE);
@@ -410,7 +478,7 @@ public class MainActivity extends AppCompatActivity {
         answerThird.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                tempButtonClick=3;
+                tempButtonClick = 3;
                 answerOne.setClickable(false);
                 answerSecond.setClickable(false);
                 answerThird.setBackgroundColor(Color.BLUE);
@@ -418,9 +486,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void getOnlySplash(){
+    private void getOnlySplash() {
         getRightAnswer();
-        splashVideoURL = "http://mobiversite.cloudapp.net:8080/videos/kisa.MP4";
+        splashVideoURL = "http://mobiversite.cloudapp.net:8080/videos/splash.mp4";
         final Uri uri = Uri.parse(splashVideoURL);
         splashVideoView.setVideoURI(uri);
         splashVideoView.requestFocus();
@@ -438,13 +506,9 @@ public class MainActivity extends AppCompatActivity {
         splashVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-
                 setDialogButtons();
                 questionAnswerDialog();
                 dialog.show();
-//                tempValue=tempValue+2;
-//                getSplashVideoView(tempValue);
-//                splashVideoView.setVisibility(View.VISIBLE);
             }
         });
         splashVideoView.setOnInfoListener(new MediaPlayer.OnInfoListener() {
@@ -456,11 +520,12 @@ public class MainActivity extends AppCompatActivity {
         splashVideoView.start();
     }
 
-    private void questionAnswerDialog(){
+    private void questionAnswerDialog() {
         int time = 5;
         timeCountInMilliSeconds = time * 1000;
         setProgressBarValues();
-        countDownTimer = new CountDownTimer(timeCountInMilliSeconds, 1000) {
+        tempValue = tempValue + 2;
+        answerCountDownTimer = new CountDownTimer(timeCountInMilliSeconds, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 timeTextView.setText(hmsTimeFormatter(millisUntilFinished));
@@ -473,54 +538,54 @@ public class MainActivity extends AppCompatActivity {
                 // call to initialize the progress bar values
                 setProgressBarValues();
                 dialog.dismiss();
-                tempValue=tempValue+2;
+//                tempValue=tempValue+2;
                 splashVideoView.setVisibility(View.VISIBLE);
                 getSplashVideoView(tempValue);
             }
         }.start();
-        countDownTimer.start();
+        answerCountDownTimer.start();
     }
 
-    private void setDialogButtons(){
-        Log.e(TAG, "setDialogButtons: right answer is "+rightAnswer );
-        rightAnswer=answer.getRightAnswer();
+    private void setDialogButtons() {
+        Log.e(TAG, "setDialogButtons: right answer is " + rightAnswer);
+        rightAnswer = answer.getRightAnswer();
         answerOne.setText(questionAndAnswer.getAnswer());
         answerSecond.setText(questionAndAnswer.getAnswer2());
         answerThird.setText(questionAndAnswer.getAnswer3());
         questionTextView.setText(questionAndAnswer.getQuestion());
-        if (rightAnswer==1 && tempButtonClick==rightAnswer){
+        if (rightAnswer == 1 && tempButtonClick == rightAnswer) {
             answerOne.setBackgroundColor(Color.GREEN);
         }
-        if (rightAnswer==2 && tempButtonClick==rightAnswer){
+        if (rightAnswer == 2 && tempButtonClick == rightAnswer) {
             answerSecond.setBackgroundColor(Color.GREEN);
         }
-        if (rightAnswer==3 && tempButtonClick==rightAnswer){
+        if (rightAnswer == 3 && tempButtonClick == rightAnswer) {
             answerThird.setBackgroundColor(Color.GREEN);
         }
-        if (tempButtonClick==1 &&  tempButtonClick!=rightAnswer){
+        if (tempButtonClick == 1 && tempButtonClick != rightAnswer) {
             answerOne.setBackgroundColor(Color.RED);
-            if (rightAnswer==2)
+            if (rightAnswer == 2)
                 answerSecond.setBackgroundColor(Color.GREEN);
-            if (rightAnswer==3)
+            if (rightAnswer == 3)
                 answerThird.setBackgroundColor(Color.GREEN);
         }
-        if (tempButtonClick==2 && tempButtonClick!=rightAnswer){
+        if (tempButtonClick == 2 && tempButtonClick != rightAnswer) {
             answerSecond.setBackgroundColor(Color.RED);
-            if (rightAnswer==1)
+            if (rightAnswer == 1)
                 answerOne.setBackgroundColor(Color.GREEN);
-            if (rightAnswer==3)
+            if (rightAnswer == 3)
                 answerThird.setBackgroundColor(Color.GREEN);
         }
-        if (tempButtonClick==3 && tempButtonClick!=rightAnswer){
+        if (tempButtonClick == 3 && tempButtonClick != rightAnswer) {
             answerThird.setBackgroundColor(Color.RED);
-            if (rightAnswer==1)
+            if (rightAnswer == 1)
                 answerOne.setBackgroundColor(Color.GREEN);
-            if (rightAnswer==2)
+            if (rightAnswer == 2)
                 answerSecond.setBackgroundColor(Color.GREEN);
         }
     }
 
-    private void getRightAnswer(){
+    private void getRightAnswer() {
         //http://localhost:8080/answer/getAnswer?questionId=3
         OkHttpClient client = new OkHttpClient();
         HttpUrl url = new HttpUrl.Builder()
@@ -531,20 +596,21 @@ public class MainActivity extends AppCompatActivity {
                 .addPathSegment("getAnswer")
                 .addQueryParameter("questionId", String.valueOf(questionAndAnswer.getQuestionNumber()))
                 .build();
-        Log.e(TAG, "getRightAnswer: URL :"+ url.toString() );
+        Log.e(TAG, "getRightAnswer: URL :" + url.toString());
         Request request = new Request.Builder().url(url.toString()).build();
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Request request, IOException e) {
 
             }
+
             @Override
             public void onResponse(Response response) throws IOException {
                 int myResponse = Integer.parseInt(response.body().string());
-                if (response.body()!=null){
+                if (response.body() != null) {
                     answer.setRightAnswer(myResponse);
                     Log.e(TAG, "onResponse: answer is " + answer.getRightAnswer());
-                    rightAnswer=answer.getRightAnswer();
+                    rightAnswer = answer.getRightAnswer();
 
                 }
             }
